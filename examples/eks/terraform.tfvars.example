@@ -1,0 +1,117 @@
+region          = "us-west-2"
+cluster_name    = "my-eks-cluster"
+cluster_version = "1.31"
+
+# === Mode 1: EKS Auto Mode (uncomment to use) ===
+# enable_auto_mode = true
+# enable_karpenter = false
+# node_groups      = {}
+
+# === Mode 2: Karpenter (uncomment to use) ===
+enable_auto_mode = false
+enable_karpenter = true
+node_groups      = {}
+
+# Karpenter CRDs configuration (optional, defaults applied)
+karpenter_crds_config = {
+  default_nodepool = {
+    limits_cpu            = "200"
+    limits_memory         = "800Gi"
+    instance_categories   = ["c", "m", "r"]
+    exclude_instance_sizes = ["nano", "micro", "small"]
+  }
+  gpu_nodepool = {
+    enabled           = true
+    limits_cpu        = "100"
+    instance_families = ["g5", "g6", "p3", "p4", "p5"]
+  }
+  arm64_nodepool = {
+    enabled           = true
+    limits_cpu        = "50"
+    instance_families = ["m7g", "c7g", "r7g"]
+  }
+  ec2_nodeclass = {
+    block_device_size = 100
+    block_device_type = "gp3"
+    http_tokens       = "required"
+    http_hop_limit    = 2
+  }
+}
+
+# === Mode 3: Managed Node Groups (uncomment to use) ===
+# enable_auto_mode = false
+# enable_karpenter = false
+# node_groups = {
+#   general = {
+#     instance_types = ["t3.medium"]
+#     desired_size   = 2
+#     min_size       = 1
+#     max_size       = 10
+#   }
+#   gpu = {
+#     instance_types = ["g5.xlarge"]
+#     desired_size   = 1
+#     min_size       = 0
+#     max_size       = 5
+#     labels = {
+#       "accelerator" = "nvidia"
+#     }
+#     taints = [
+#       {
+#         key    = "nvidia.com/gpu"
+#         value  = "present"
+#         effect = "NO_SCHEDULE"
+#       }
+#     ]
+#   }
+# }
+
+# EKS addons (managed by AWS)
+addons = {
+  vpc-cni = {
+    addon_name = "vpc-cni"
+  }
+  coredns = {
+    addon_name = "coredns"
+  }
+  kube-proxy = {
+    addon_name = "kube-proxy"
+  }
+  aws-ebs-csi-driver = {
+    addon_name = "aws-ebs-csi-driver"
+  }
+}
+
+# AWS Load Balancer Controller
+enable_aws_lb_controller = true
+# aws_lb_controller_config = {
+#   chart_version = "1.9.0"
+# }
+
+# KEDA event-driven autoscaling (optional)
+enable_keda = false
+# keda_config = {
+#   chart_version    = "2.16.0"
+#   namespace        = "keda"
+#   replica_count    = 2
+#   irsa_role_arn    = "arn:aws:iam::123456789012:role/keda-irsa"
+# }
+
+# Traefik ingress controller (optional)
+enable_traefik = false
+# traefik_config = {
+#   chart_version     = "34.3.0"
+#   namespace         = "traefik"
+#   service_type      = "LoadBalancer"
+#   replicas          = 2
+#   dashboard_enabled = true
+#   dashboard_auth    = true
+#   ssl_enabled       = true
+#   acme_email        = "admin@example.com"
+#   acme_staging      = true
+# }
+
+tags = {
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+}

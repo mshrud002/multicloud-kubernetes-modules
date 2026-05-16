@@ -1,0 +1,44 @@
+cluster_name      = "my-rosa-cluster"
+aws_region        = "us-east-1"
+openshift_version = "4.18"
+
+# Hosted Control Planes (HyperShift) - separates control plane from data plane
+hosted_control_plane = false
+
+# Cluster Autoscaler
+enable_cluster_autoscaler = true
+cluster_autoscaler_config = {
+  scale_down_delay_after_add    = "10m"
+  scale_down_delay_after_delete = "10s"
+  scale_down_unneeded_time      = "10m"
+}
+
+# Machine pools (OpenShift equivalent of node groups)
+machine_pools = {
+  worker = {
+    machine_type = "m5.xlarge"
+    replicas     = 3
+    min_replicas = 3
+    max_replicas = 10
+  }
+  cpu-heavy = {
+    machine_type = "c5.4xlarge"
+    replicas     = 2
+    min_replicas = 2
+    max_replicas = 8
+    labels = {
+      "node-role.kubernetes.io/infra" = ""
+    }
+  }
+}
+
+# Karpenter (experimental on OpenShift)
+enable_karpenter = false
+# karpenter_config = {
+#   chart_version = "1.2.0"
+# }
+
+tags = {
+  Environment = "dev"
+  ManagedBy   = "Terraform"
+}

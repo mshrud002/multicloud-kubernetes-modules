@@ -1,0 +1,23 @@
+# Karpenter Helm values
+replicas: 2
+strategy:
+  type: Recreate
+
+settings:
+  clusterName: ${cluster_name}
+  interruptionQueueName: Karpenter-${cluster_name}
+
+  aws:
+    defaultInstanceProfile: KarpenterNodeInstanceProfile-${cluster_name}
+
+controller:
+  resources:
+    requests:
+      cpu: 1
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 1Gi
+
+webhook:
+  port: 8443

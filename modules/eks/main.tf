@@ -223,7 +223,8 @@ resource "aws_eks_addon" "this" {
 locals {
   keda_enabled      = var.enable_keda || var.keda_config != null
   traefik_enabled   = var.enable_traefik || var.traefik_config != null
-  neuvector_enabled = var.enable_neuvector || var.neuvector_config != null
+  neuvector_enabled     = var.enable_neuvector || var.neuvector_config != null
+  opa_gatekeeper_enabled = var.enable_opa_gatekeeper || var.opa_gatekeeper_config != null
 }
 
 resource "helm_release" "keda" {
@@ -448,6 +449,68 @@ resource "helm_release" "neuvector" {
 
   dynamic "set" {
     for_each = var.neuvector_config.extra_sets != null ? var.neuvector_config.extra_sets : {}
+    content {
+      name  = set.key
+      value = set.value
+    }
+  }
+
+  depends_on = [aws_eks_cluster.this, aws_eks_addon.this]
+}
+
+resource "helm_release" "opa_gatekeeper" {
+  count = local.opa_gatekeeper_enabled ? 1 : 0
+
+  name       = "gatekeeper"
+  namespace  = try(var.opa_gatekeeper_config.namespace, "gatekeeper-system")
+  repository = "https://open-policy-agent.github.io/gatekeeper/charts"
+  chart      = "gatekeeper"
+  version    = try(var.opa_gatekeeper_config.chart_version, "3.18.0")
+
+  create_namespace = try(var.opa_gatekeeper_config.create_namespace, true)
+
+  set {
+    name  = "replicas"
+    value = try(var.opa_gatekeeper_config.replicas, 3)
+  }
+
+  set {
+    name  = "auditInterval"
+    value = try(var.opa_gatekeeper_config.audit_interval, "60s")
+  }
+
+  set {
+    name  = "constraintViolationsLimit"
+    value = try(var.opa_gatekeeper_config.constraint_violations_limit, 20)
+  }
+
+  set {
+    name  = "auditChunkSize"
+    value = try(var.opa_gatekeeper_config.audit_chunk_size, 500)
+  }
+
+  set {
+    name  = "logLevel"
+    value = try(var.opa_gatekeeper_config.log_level, "INFO")
+  }
+
+  set {
+    name  = "emitAdmissionEvents"
+    value = try(var.opa_gatekeeper_config.emit_admission_events, true)
+  }
+
+  set {
+    name  = "enableMutatingWebhook"
+    value = try(var.opa_gatekeeper_config.mutating_webhook_enabled, false)
+  }
+
+  set {
+    name  = "enableExternalData"
+    value = try(var.opa_gatekeeper_config.external_data_enabled, false)
+  }
+
+  dynamic "set" {
+    for_each = var.opa_gatekeeper_config.extra_sets != null ? var.opa_gatekeeper_config.extra_sets : {}
     content {
       name  = set.key
       value = set.value

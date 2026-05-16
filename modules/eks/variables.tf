@@ -229,6 +229,31 @@ variable "neuvector_config" {
   default = null
 }
 
+variable "enable_opa_gatekeeper" {
+  description = "Enable OPA Gatekeeper (policy controller for Kubernetes)"
+  type        = bool
+  default     = false
+}
+
+variable "opa_gatekeeper_config" {
+  description = "OPA Gatekeeper Helm chart configuration"
+  type = object({
+    chart_version            = optional(string, "3.18.0")
+    namespace                = optional(string, "gatekeeper-system")
+    create_namespace         = optional(bool, true)
+    replicas                 = optional(number, 3)
+    audit_interval           = optional(string, "60s")
+    constraint_violations_limit = optional(number, 20)
+    audit_chunk_size         = optional(number, 500)
+    log_level                = optional(string, "INFO")
+    emit_admission_events    = optional(bool, true)
+    mutating_webhook_enabled = optional(bool, false)
+    external_data_enabled    = optional(bool, false)
+    extra_sets               = optional(map(string), {})
+  })
+  default = null
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

@@ -59,7 +59,9 @@ module "eks" {
   keda_config    = var.keda_config
   enable_traefik  = var.enable_traefik
   traefik_config  = var.traefik_config
-  enable_neuvector = var.enable_neuvector
-  neuvector_config = var.neuvector_config
-  tags            = var.tags
+  enable_neuvector      = var.enable_neuvector
+  neuvector_config      = var.neuvector_config
+  enable_opa_gatekeeper = var.enable_opa_gatekeeper
+  opa_gatekeeper_config = var.opa_gatekeeper_config
+  tags                  = var.tags
 }

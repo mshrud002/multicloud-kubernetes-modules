@@ -122,3 +122,13 @@ output "neuvector_namespace" {
   description = "NeuVector namespace"
   value       = local.neuvector_enabled ? try(var.neuvector_config.namespace, "neuvector") : null
 }
+
+output "opa_gatekeeper_enabled" {
+  description = "Whether OPA Gatekeeper is enabled"
+  value       = local.opa_gatekeeper_enabled
+}
+
+output "opa_gatekeeper_namespace" {
+  description = "OPA Gatekeeper namespace"
+  value       = local.opa_gatekeeper_enabled ? try(var.opa_gatekeeper_config.namespace, "gatekeeper-system") : null
+}

@@ -125,6 +125,16 @@ enable_neuvector = false
 #   enable_auto_scan   = true
 # }
 
+# OPA Gatekeeper policy controller (optional)
+enable_opa_gatekeeper = false
+# opa_gatekeeper_config = {
+#   chart_version  = "3.18.0"
+#   namespace      = "gatekeeper-system"
+#   replicas       = 3
+#   audit_interval = "60s"
+#   log_level      = "INFO"
+# }
+
 tags = {
   Environment = "dev"
   ManagedBy   = "Terraform"

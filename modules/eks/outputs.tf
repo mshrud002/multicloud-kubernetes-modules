@@ -112,3 +112,13 @@ output "cluster_autoscaler_role_arn" {
   description = "IAM role ARN for Cluster Autoscaler"
   value       = !local.auto_mode_enabled && !local.karpenter_enabled ? aws_iam_role.cluster_autoscaler[0].arn : null
 }
+
+output "neuvector_enabled" {
+  description = "Whether NeuVector is enabled"
+  value       = local.neuvector_enabled
+}
+
+output "neuvector_namespace" {
+  description = "NeuVector namespace"
+  value       = local.neuvector_enabled ? try(var.neuvector_config.namespace, "neuvector") : null
+}

@@ -111,6 +111,20 @@ enable_traefik = false
 #   acme_staging      = true
 # }
 
+# NeuVector container security platform (optional)
+enable_neuvector = false
+# neuvector_config = {
+#   chart_version      = "2.7.4"
+#   namespace          = "neuvector"
+#   replicas           = 3
+#   persistent_volume  = true
+#   storage_size       = "10Gi"
+#   enable_webui       = true
+#   webui_service_type = "ClusterIP"
+#   enable_admission   = true
+#   enable_auto_scan   = true
+# }
+
 tags = {
   Environment = "dev"
   ManagedBy   = "Terraform"

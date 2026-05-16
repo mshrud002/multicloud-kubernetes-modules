@@ -137,6 +137,34 @@ variable "traefik_config" {
   default = null
 }
 
+variable "enable_neuvector" {
+  description = "Enable NeuVector container security"
+  type        = bool
+  default     = false
+}
+
+variable "neuvector_config" {
+  description = "NeuVector configuration"
+  type = object({
+    chart_version      = optional(string, "2.7.4")
+    namespace          = optional(string, "neuvector")
+    create_namespace   = optional(bool, true)
+    replicas           = optional(number, 3)
+    persistent_volume  = optional(bool, true)
+    storage_size       = optional(string, "10Gi")
+    storage_class      = optional(string)
+    metrics_enabled    = optional(bool, true)
+    enable_webui       = optional(bool, true)
+    webui_service_type = optional(string, "ClusterIP")
+    enable_admission   = optional(bool, true)
+    enable_auto_scan   = optional(bool, true)
+    registry_username  = optional(string)
+    irsa_role_arn      = optional(string)
+    extra_sets         = optional(map(string), {})
+  })
+  default = null
+}
+
 variable "tags" {
   description = "Tags to apply"
   type        = map(string)

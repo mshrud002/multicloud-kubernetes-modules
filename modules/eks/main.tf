@@ -221,8 +221,9 @@ resource "aws_eks_addon" "this" {
 }
 
 locals {
-  keda_enabled    = var.enable_keda || var.keda_config != null
-  traefik_enabled = var.enable_traefik || var.traefik_config != null
+  keda_enabled      = var.enable_keda || var.keda_config != null
+  traefik_enabled   = var.enable_traefik || var.traefik_config != null
+  neuvector_enabled = var.enable_neuvector || var.neuvector_config != null
 }
 
 resource "helm_release" "keda" {
@@ -356,6 +357,100 @@ resource "helm_release" "traefik" {
     content {
       name  = "certificatesResolvers.letsencrypt.acme.caServer"
       value = "https://acme-staging-v02.api.letsencrypt.org/directory"
+    }
+  }
+
+  depends_on = [aws_eks_cluster.this, aws_eks_addon.this]
+}
+
+resource "helm_release" "neuvector" {
+  count = local.neuvector_enabled ? 1 : 0
+
+  name       = "neuvector"
+  namespace  = try(var.neuvector_config.namespace, "neuvector")
+  repository = "https://neuvector.github.io/neuvector-helm"
+  chart      = "core"
+  version    = try(var.neuvector_config.chart_version, "2.7.4")
+
+  create_namespace = try(var.neuvector_config.create_namespace, true)
+
+  set {
+    name  = "controller.replicas"
+    value = try(var.neuvector_config.replicas, 3)
+  }
+
+  set {
+    name  = "manager.enabled"
+    value = try(var.neuvector_config.enable_webui, true)
+  }
+
+  set {
+    name  = "manager.svc.type"
+    value = try(var.neuvector_config.webui_service_type, "ClusterIP")
+  }
+
+  set {
+    name  = "admissionwebhook.enabled"
+    value = try(var.neuvector_config.enable_admission, true)
+  }
+
+  set {
+    name  = "controller.autoScan"
+    value = try(var.neuvector_config.enable_auto_scan, true)
+  }
+
+  set {
+    name  = "controller.pvc.enabled"
+    value = try(var.neuvector_config.persistent_volume, true)
+  }
+
+  set {
+    name  = "controller.pvc.capacity"
+    value = try(var.neuvector_config.storage_size, "10Gi")
+  }
+
+  dynamic "set" {
+    for_each = try(var.neuvector_config.storage_class, null) != null ? [1] : []
+    content {
+      name  = "controller.pvc.storageClass"
+      value = var.neuvector_config.storage_class
+    }
+  }
+
+  set {
+    name  = "prometheus.exporter.enabled"
+    value = try(var.neuvector_config.metrics_enabled, true)
+  }
+
+  dynamic "set" {
+    for_each = try(var.neuvector_config.registry_username, null) != null ? [1] : []
+    content {
+      name  = "registry"
+      value = var.neuvector_config.registry_username
+    }
+  }
+
+  dynamic "set" {
+    for_each = try(var.neuvector_config.registry_password, null) != null ? [1] : []
+    content {
+      name  = "imagePullSecrets[0].name"
+      value = "neuvector-pull-secret"
+    }
+  }
+
+  dynamic "set" {
+    for_each = try(var.neuvector_config.irsa_role_arn, null) != null ? [1] : []
+    content {
+      name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = var.neuvector_config.irsa_role_arn
+    }
+  }
+
+  dynamic "set" {
+    for_each = var.neuvector_config.extra_sets != null ? var.neuvector_config.extra_sets : {}
+    content {
+      name  = set.key
+      value = set.value
     }
   }
 
